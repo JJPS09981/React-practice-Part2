@@ -10654,6 +10654,7 @@ a.has-text-danger-dark:hover {
 .book-list {
   display: flex;
   flex-wrap: wrap;
+
   margin: auto;
   max-width: 1024px;
 }

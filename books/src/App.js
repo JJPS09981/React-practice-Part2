@@ -1,20 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BookCreat from "./components/BookCreat.js";
 import BookList from "./components/BookList.js";
+import axios from "axios";
 
 function App() {
   const [books, setBooks] = useState([]);
 
-  const editBookById = function (id, newTitle) {
+  const fetchBooks = async function () {
+    const res = await axios.get(`http://localhost:3001/books`);
+    setBooks(res.data);
+  };
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const editBookById = async function (id, newTitle) {
+    const res = await axios.patch(`http://localhost:3001/books/${id}`, {
+      title: newTitle,
+    });
     const updateBooks = books.map((book) => {
-      if (book.id === id) return { ...book, title: newTitle };
+      if (book.id === id) return { ...book, ...res.data };
       return book;
     });
 
     setBooks(updateBooks);
   };
 
-  const deleteBookById = (id) => {
+  const deleteBookById = async (id) => {
+    await axios.delete(`http://localhost:3001/books/${id}`);
+
     const updateBooks = books.filter((book) => {
       return book.id !== id;
     });
@@ -22,22 +36,22 @@ function App() {
     setBooks(updateBooks);
   };
 
-  function secureRandomString(length = 12) {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const array = new Uint32Array(length);
-    crypto.getRandomValues(array); // 更隨機、更安全
-    return Array.from(array, (x) => chars[x % chars.length]).join("");
-  }
+  //   function secureRandomString(length = 12) {
+  //     const chars =
+  //       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  //     const array = new Uint32Array(length);
+  //     crypto.getRandomValues(array); // 更隨機、更安全
+  //     return Array.from(array, (x) => chars[x % chars.length]).join("");
+  //   }
 
-  const handleCreatBook = (title) => {
-    const updateBooks = [
-      ...books,
-      { id: secureRandomString(20), title: title },
-    ];
+  const handleCreatBook = async (title) => {
+    if (title !== "") {
+      const res = await axios.post(`http://localhost:3001/books`, { title });
 
-    if (title !== "") setBooks(updateBooks);
-    console.log(updateBooks);
+      const updateBooks = [...books, res];
+      setBooks(updateBooks);
+      console.log(updateBooks);
+    }
   };
 
   return (
